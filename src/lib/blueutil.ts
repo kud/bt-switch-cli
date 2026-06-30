@@ -102,8 +102,18 @@ export const isConnected = async (mac: string): Promise<boolean> => {
   return stdout.trim() === "1"
 }
 
-export const connect = async (mac: string): Promise<void> => {
-  await runBlueutil(["--connect", mac])
+export const connect = async (mac: string, timeout = 5): Promise<void> => {
+  await runBlueutil(["--connect", mac, "--wait-connect", mac, String(timeout)])
+}
+
+export const disconnect = async (mac: string, timeout = 5): Promise<void> => {
+  await runBlueutil([
+    "--disconnect",
+    mac,
+    "--wait-disconnect",
+    mac,
+    String(timeout),
+  ])
 }
 
 export const forget = async (mac: string): Promise<void> => {

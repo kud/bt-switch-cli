@@ -3,7 +3,7 @@ import chalk from "chalk"
 import readline from "node:readline"
 import {
   isPaired,
-  forget as bluetoothForget,
+  connect as bluetoothConnect,
   pairFlow,
 } from "../lib/blueutil.js"
 import { resolveMac } from "../lib/config.js"
@@ -24,7 +24,7 @@ export const switchCmd = defineCommand({
   meta: {
     name: "switch",
     description:
-      "Full handoff: unpair then re-pair so another Mac can claim the device",
+      "Switch a device to this Mac — connects it, claiming it from whichever Mac currently holds it",
   },
   args: {
     name: {
@@ -46,16 +46,15 @@ export const switchCmd = defineCommand({
 
     const paired = await isPaired(mac)
     if (paired) {
-      process.stdout.write(chalk.dim(`Unpairing ${args.name}...\n`))
-      await bluetoothForget(mac)
-      process.stdout.write(chalk.dim("Unpaired.\n"))
-    } else {
-      process.stdout.write(
-        chalk.dim(`${args.name} is not currently paired — skipping unpair.\n`),
-      )
+      process.stdout.write(chalk.dim(`Switching ${args.name} to this Mac...\n`))
+      await bluetoothConnect(mac)
+      process.stdout.write(chalk.green(`✓ ${args.name} connected.\n`))
+      return
     }
 
-    process.stdout.write("\n")
+    process.stdout.write(
+      chalk.yellow(`${args.name} isn't paired on this Mac yet.\n`),
+    )
     process.stdout.write(
       chalk.yellow(
         `Hold the power button on ${args.name} until the LED blinks rapidly.\n`,
