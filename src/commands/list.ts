@@ -32,11 +32,10 @@ export const list = defineCommand({
       chalk.bold("PAIRED") +
       "  " +
       chalk.bold("CONNECTED")
+    const dividerWidth =
+      nameWidth + 2 + macWidth + 2 + "PAIRED".length + 2 + "CONNECTED".length
     process.stdout.write(header + "\n")
-    process.stdout.write(
-      chalk.dim("─".repeat(header.replace(/\x1b\[[0-9;]*m/g, "").length)) +
-        "\n",
-    )
+    process.stdout.write(chalk.dim("─".repeat(dividerWidth)) + "\n")
 
     await Promise.all(
       entries.map(async ([name, mac]) => {

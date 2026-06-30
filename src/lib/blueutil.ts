@@ -1,5 +1,7 @@
 import { execa } from "execa"
 
+type BlueutilOptions = { reject?: boolean }
+
 export type Device = {
   mac: string
   name: string
@@ -12,7 +14,37 @@ type BlueutilJsonEntry = {
   connected: boolean
 }
 
-const dedupeByMac = (devices: Device[]): Device[] => {
+const BLUEUTIL_MISSING =
+  "blueutil not found. Install it with:\n\n  brew install blueutil\n"
+
+const isEnoent = (value: unknown): boolean =>
+  !!value &&
+  typeof value === "object" &&
+  (value as { code?: string }).code === "ENOENT"
+
+const assertPlatform = (): void => {
+  if (process.platform !== "darwin") {
+    throw new Error(
+      "bt-switch only runs on macOS — it drives the blueutil binary.",
+    )
+  }
+}
+
+const runBlueutil = async (args: string[], options?: BlueutilOptions) => {
+  assertPlatform()
+  try {
+    const result = await execa("blueutil", args, options)
+    if ((result as { failed?: boolean }).failed && isEnoent(result)) {
+      throw new Error(BLUEUTIL_MISSING)
+    }
+    return result
+  } catch (error) {
+    if (isEnoent(error)) throw new Error(BLUEUTIL_MISSING, { cause: error })
+    throw error
+  }
+}
+
+export const dedupeByMac = (devices: Device[]): Device[] => {
   const byMac = new Map<string, Device>()
   for (const d of devices) {
     const existing = byMac.get(d.mac)
@@ -29,19 +61,19 @@ const dedupeByMac = (devices: Device[]): Device[] => {
   return [...byMac.values()]
 }
 
-const toDevice = (d: BlueutilJsonEntry, connected: boolean): Device => {
+export const toDevice = (d: BlueutilJsonEntry, connected: boolean): Device => {
   const mac = d.address.replace(/-/g, ":")
   return { mac, name: d.name ?? mac, connected }
 }
 
 export const listPaired = async (): Promise<Device[]> => {
-  const { stdout } = await execa("blueutil", ["--paired", "--format", "json"])
+  const { stdout } = await runBlueutil(["--paired", "--format", "json"])
   const raw = JSON.parse(stdout) as BlueutilJsonEntry[]
   return dedupeByMac(raw.map((d) => toDevice(d, d.connected)))
 }
 
 export const runInquiry = async (seconds = 5): Promise<Device[]> => {
-  const { stdout } = await execa("blueutil", [
+  const { stdout } = await runBlueutil([
     "--inquiry",
     String(seconds),
     "--format",
@@ -53,13 +85,9 @@ export const runInquiry = async (seconds = 5): Promise<Device[]> => {
 }
 
 export const isPaired = async (mac: string): Promise<boolean> => {
-  const { stdout } = await execa(
-    "blueutil",
-    ["--info", mac, "--format", "json"],
-    {
-      reject: false,
-    },
-  )
+  const { stdout } = await runBlueutil(["--info", mac, "--format", "json"], {
+    reject: false,
+  })
   try {
     return (JSON.parse(stdout) as { paired?: boolean }).paired === true
   } catch {
@@ -68,18 +96,18 @@ export const isPaired = async (mac: string): Promise<boolean> => {
 }
 
 export const isConnected = async (mac: string): Promise<boolean> => {
-  const { stdout } = await execa("blueutil", ["--is-connected", mac], {
+  const { stdout } = await runBlueutil(["--is-connected", mac], {
     reject: false,
   })
   return stdout.trim() === "1"
 }
 
 export const connect = async (mac: string): Promise<void> => {
-  await execa("blueutil", ["--connect", mac])
+  await runBlueutil(["--connect", mac])
 }
 
 export const forget = async (mac: string): Promise<void> => {
-  await execa("blueutil", ["--unpair", mac])
+  await runBlueutil(["--unpair", mac])
 }
 
 type ProgressCallback = (message: string) => void
@@ -96,11 +124,11 @@ export const pairFlow = async (
     onProgress(
       `Scanning for devices (5s)... (attempt ${attempt}/${maxAttempts})`,
     )
-    await execa("blueutil", ["--inquiry", "5"])
+    await runBlueutil(["--inquiry", "5"])
     onProgress("Sending pair request...")
-    await execa("blueutil", ["--pair", mac], { reject: false })
+    await runBlueutil(["--pair", mac], { reject: false })
     await sleep(1000)
-    await execa("blueutil", ["--connect", mac], { reject: false })
+    await runBlueutil(["--connect", mac], { reject: false })
     onProgress("Verifying connection...")
     if (await isConnected(mac)) return true
     onProgress("Device not detected.")

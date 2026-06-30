@@ -63,8 +63,10 @@ $ bt-switch forget trackpad
 git clone https://github.com/kud/bt-switch-cli.git
 cd bt-switch-cli
 npm install
-npm run dev
-npm run build
+npm run dev      # run from source via tsx
+npm test         # unit tests (vitest)
+npm run lint     # eslint
+npm run build    # bundle to dist/
 ```
 
 📚 **Full documentation → [bt-switch-cli/docs](https://kud.io/projects/bt-switch-cli/docs)**
