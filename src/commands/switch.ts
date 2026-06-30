@@ -7,6 +7,7 @@ import {
   pairFlow,
 } from "../lib/blueutil.js"
 import { resolveMac } from "../lib/config.js"
+import { withSpinner } from "../spinner.js"
 
 const waitForEnter = () =>
   new Promise<void>((resolve) => {
@@ -46,8 +47,9 @@ export const switchCmd = defineCommand({
 
     const paired = await isPaired(mac)
     if (paired) {
-      process.stdout.write(chalk.dim(`Switching ${args.name} to this Mac...\n`))
-      await bluetoothConnect(mac)
+      await withSpinner(`Switching ${args.name} to this Mac...`, () =>
+        bluetoothConnect(mac),
+      )
       process.stdout.write(chalk.green(`✓ ${args.name} connected.\n`))
       return
     }

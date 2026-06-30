@@ -7,6 +7,7 @@ import {
   pairFlow,
 } from "../lib/blueutil.js"
 import { resolveMac } from "../lib/config.js"
+import { withSpinner } from "../spinner.js"
 
 const waitForEnter = () =>
   new Promise<void>((resolve) => {
@@ -46,8 +47,9 @@ export const connect = defineCommand({
 
     const paired = await isPaired(mac)
     if (paired) {
-      process.stdout.write(chalk.dim("Already bonded — reconnecting...\n"))
-      await bluetoothConnect(mac)
+      await withSpinner(`Reconnecting ${args.name}...`, () =>
+        bluetoothConnect(mac),
+      )
       process.stdout.write(chalk.green(`✓ ${args.name} connected.\n`))
       return
     }
