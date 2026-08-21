@@ -12,6 +12,11 @@
 
 </div>
 
+> [!NOTE]
+> **Prototype — not on npm yet.** The commands work and are covered by tests, but
+> nothing has been released, so the npm badge above reads *not found* and `npm i -g`
+> will not resolve it. Install from source for now, and expect the interfaces to move.
+
 ## Features
 
 - **Named devices** — connect peripherals by a friendly name, never a MAC address
