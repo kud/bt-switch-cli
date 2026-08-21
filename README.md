@@ -14,7 +14,7 @@
 
 > [!NOTE]
 > **Prototype — not on npm yet.** The commands work and are covered by tests, but
-> nothing has been released, so the npm badge above reads *not found* and `npm i -g`
+> nothing has been released, so the npm badge above reads _not found_ and `npm i -g`
 > will not resolve it. Install from source for now, and expect the interfaces to move.
 
 ## Features
