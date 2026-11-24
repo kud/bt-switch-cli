@@ -26,7 +26,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsx src/index.tsx",
+    "dev": "tsx src/cli.tsx",
     "build": "tsup src/index.tsx --format esm --dts",
     "build:watch": "tsup src/index.tsx --format esm --dts --watch",
     "clean": "rm -rf dist",
