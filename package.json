@@ -26,7 +26,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsx src/index.tsx",
+    "dev": "tsx src/cli.tsx",
     "build": "tsup src/index.tsx --format esm --dts",
     "build:watch": "tsup src/index.tsx --format esm --dts --watch",
     "clean": "rm -rf dist",
@@ -40,14 +40,14 @@
     "chalk": "5.6.2",
     "citty": "0.2.2",
     "execa": "9.6.1",
-    "ink": "7.1.0",
+    "ink": "8.0.0",
     "ink-spinner": "5.0.0",
-    "react": "19.2.7"
+    "react": "19.3.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "26.0.1",
-    "@types/react": "19.2.17",
+    "@types/react": "19.3.0",
     "eslint": "10.6.0",
     "eslint-config-prettier": "10.1.8",
     "prettier": "3.9.4",
